@@ -1,0 +1,33 @@
+all:
+  vars:
+    # The generated inventory is assumed to be used from the clab host.
+    # Hence no http proxy should be used. Therefore we make sure the http
+    # module does not attempt using any global http proxy.
+    ansible_httpapi_use_proxy: false
+  children:
+    linux:
+      hosts:
+        clab-ddos-blackhole-lab-A1:
+          ansible_host: 172.100.100.13
+        clab-ddos-blackhole-lab-CE1:
+          ansible_host: 172.100.100.10
+        clab-ddos-blackhole-lab-PE1:
+          ansible_host: 172.100.100.2
+        clab-ddos-blackhole-lab-PE2:
+          ansible_host: 172.100.100.4
+        clab-ddos-blackhole-lab-PE3:
+          ansible_host: 172.100.100.8
+        clab-ddos-blackhole-lab-PE4:
+          ansible_host: 172.100.100.7
+        clab-ddos-blackhole-lab-RR:
+          ansible_host: 172.100.100.12
+        clab-ddos-blackhole-lab-attacker1:
+          ansible_host: 172.100.100.3
+        clab-ddos-blackhole-lab-server:
+          ansible_host: 172.100.100.11
+        clab-ddos-blackhole-lab-switch1:
+          ansible_host: 172.100.100.5
+        clab-ddos-blackhole-lab-switch2:
+          ansible_host: 172.100.100.6
+        clab-ddos-blackhole-lab-victim1:
+          ansible_host: 172.100.100.9

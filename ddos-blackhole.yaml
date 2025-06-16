@@ -1,0 +1,121 @@
+name: ddos-blackhole-lab
+mgmt:
+    network: clab_mgmt
+    ipv4-subnet: 172.100.100.0/24
+    mtu: 1500
+topology:
+  nodes:
+    attacker1:
+      kind: linux
+      image: sflow/clab-iperf3
+      exec:
+        - ip addr add 10.60.0.2/24 dev eth1
+        - ip link set eth1 up
+        - ip route del default
+        - ip route add default via 10.60.0.1
+
+    switch1:
+      kind: linux
+      image: frrouting/frr
+      exec:
+      - ip link add name br0 type bridge
+      - ip link set eth1 master br0
+      - ip link set eth2 master br0
+      - ip link set eth1 up
+      - ip link set eth2 up
+      - ip link set br0 up
+
+    switch2:
+      kind: linux
+      image: frrouting/frr
+      exec:
+      - ip link add name br0 type bridge
+      - ip link set eth1 master br0
+      - ip link set eth2 master br0
+      - ip link set eth1 up
+      - ip link set eth2 up
+      - ip link set br0 up
+
+    victim1:
+      kind: linux
+      image: sflow/clab-iperf3
+      exec:
+        - ip addr add 10.80.0.2/24 dev eth1
+        - ip link set eth1 up
+        - ip route del default
+        - ip route add default via 10.80.0.1
+
+    server:
+      kind: linux
+      image: alpine:latest
+      exec: ["/bin/sh"]
+    
+    A1:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/A1/daemons:/etc/frr/daemons
+        - ./configs/A1/frr.conf:/etc/frr/frr.conf
+
+    PE1:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/PE1/daemons:/etc/frr/daemons
+        - ./configs/PE1/frr.conf:/etc/frr/frr.conf
+
+    PE2:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/PE2/daemons:/etc/frr/daemons
+        - ./configs/PE2/frr.conf:/etc/frr/frr.conf
+    PE3:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/PE3/daemons:/etc/frr/daemons
+        - ./configs/PE3/frr.conf:/etc/frr/frr.conf
+
+    PE4:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/PE4/daemons:/etc/frr/daemons
+        - ./configs/PE4/frr.conf:/etc/frr/frr.conf
+
+    RR:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/RR/daemons:/etc/frr/daemons
+        - ./configs/RR/frr.conf:/etc/frr/frr.conf
+
+    CE1:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - ./configs/CE1/daemons:/etc/frr/daemons
+        - ./configs/CE1/frr.conf:/etc/frr/frr.conf
+
+  links:
+    - endpoints: [attacker1:eth1, switch1:eth1]
+      mtu: 1500
+    - endpoints: [switch1:eth2, A1:eth2]
+      mtu: 1500
+    - endpoints: [A1:eth1, PE1:eth1]
+      mtu: 1500
+    - endpoints: [PE1:eth2, PE2:eth2]
+      mtu: 1500
+    - endpoints: [PE2:eth1, RR:eth1]
+      mtu: 1500
+    - endpoints: [PE3:eth1, RR:eth2]
+      mtu: 1500
+    - endpoints: [PE4:eth1, RR:eth4]
+      mtu: 1500
+    - endpoints: [PE4:eth2, CE1:eth2]
+      mtu: 9000
+    - endpoints: [CE1:eth1, switch2:eth1]
+      mtu: 1500
+    - endpoints: [switch2:eth2, victim1:eth1]
+      mtu: 1500
